@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mayron1806/go-api/internal/config"
+	"github.com/mayron1806/go-api/config"
 	"github.com/mayron1806/go-api/internal/router"
 )
 

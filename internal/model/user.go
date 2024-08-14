@@ -4,17 +4,27 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	Name        string     `json:"name" gorm:"index"`
-	Email       string     `json:"email" gorm:"index;uniqueIndex"`
-	Password    string     `json:"password"`
-	Status      UserStatus `json:"status"`
-	Tokens      []Token    `json:"tokens" gorm:"foreignKey:UserID"`
-	Memberships []Member   `json:"memberships" gorm:"foreignKey:UserID"` // Relaciona com as organizações
+	Name      string        `json:"name" gorm:"index"`
+	Email     string        `json:"email" gorm:"index;uniqueIndex"`
+	Password  string        `json:"password"`
+	Type      UserType      `json:"type" gorm:"default:'common'"`
+	Challenge UserChallenge `json:"challenge" gorm:"default:'verify_email'"`
+
+	Tokens      []Token  `json:"tokens" gorm:"foreignKey:UserID"`
+	Memberships []Member `json:"memberships" gorm:"foreignKey:UserID"`
 }
 
-type UserStatus uint8
+type UserType string
 
 const (
-	UserActive UserStatus = iota
-	UserInactive
+	UserTypeAdmin  UserType = "admin"
+	UserTypeCommom UserType = "common"
+)
+
+type UserChallenge string
+
+const (
+	UserChallengeVerifyEmail   UserChallenge = "verify_email"
+	UserChallengeResetPassword UserChallenge = "reset_password"
+	UserChallengeNone          UserChallenge = "none"
 )
