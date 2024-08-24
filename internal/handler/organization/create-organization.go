@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mayron1806/go-api/internal/helper"
+	"github.com/mayron1806/go-api/internal/constants"
 	"github.com/mayron1806/go-api/internal/model"
 )
 
@@ -17,17 +17,13 @@ func (h *OrganizationHandler) CreateOrganization(c *gin.Context) {
 	if !h.ValidateRequest(c, &request) {
 		return
 	}
-	h.Logger.Debug("creating organization")
-	userId := helper.GetUserID(c)
-	h.Logger.Debugf("user id: %d", userId)
-
+	userId := h.GetUserID(c)
 	organization := model.Organization{
 		Name: request.Name,
 		Members: []model.Member{
 			{
 				UserID: userId,
 				Owner:  true,
-
 				Status: model.MemberActive,
 			},
 		},
@@ -35,6 +31,14 @@ func (h *OrganizationHandler) CreateOrganization(c *gin.Context) {
 	err := h.db.Create(&organization).Error
 	if err != nil {
 		h.ResponseError(c, http.StatusBadRequest, "error creating organization: %s", err.Error())
+		return
+	}
+
+	roles := constants.DefaultRoles
+
+	err = h.db.Create(&roles).Error
+	if err != nil {
+		h.ResponseError(c, http.StatusBadRequest, "error creating roles: %s", err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, organization)

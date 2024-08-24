@@ -11,16 +11,16 @@ type OrganizationHandler struct {
 	*handler.Handler
 	db           *gorm.DB
 	emailService *services.EmailService
+	roleService  *services.PermissionService
 }
 
 func NewOrganizationHandler() (*OrganizationHandler, error) {
 	logger := config.GetLogger("Organization Handler")
-	emailService := services.NewEmailService()
-	db := config.GetDatabase()
 	handler := &OrganizationHandler{
 		Handler:      handler.NewHandler(logger),
-		emailService: emailService,
-		db:           db,
+		emailService: services.NewEmailService(),
+		db:           config.GetDatabase(),
+		roleService:  services.NewPermissionService(),
 	}
 	return handler, nil
 }

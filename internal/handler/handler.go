@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/mayron1806/go-api/config"
+	"github.com/mayron1806/go-api/internal/services"
 )
 
 type Handler struct {
@@ -38,4 +39,23 @@ func (h *Handler) ResponseError(ctx *gin.Context, status int, format string, a .
 	var errorMessage = fmt.Sprintf(format, a...)
 	h.Logger.Errorf("error: %s", errorMessage)
 	ctx.JSON(status, gin.H{"error": errorMessage})
+}
+func (h Handler) GetClaims(c *gin.Context) *services.JWTClaims {
+	contextClaims, exists := c.Get("claims")
+	if !exists {
+		return nil
+	}
+
+	claims, ok := contextClaims.(services.JWTClaims)
+	if !ok {
+		return nil
+	}
+	return &claims
+}
+func (h Handler) GetUserID(c *gin.Context) uint {
+	claims := h.GetClaims(c)
+	if claims == nil {
+		return 0
+	}
+	return claims.UserID
 }

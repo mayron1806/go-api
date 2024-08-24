@@ -14,13 +14,16 @@ const (
 
 type Member struct {
 	gorm.Model
-	UserID         uint         `json:"user_id" gorm:"index"`
-	User           User         `json:"user" gorm:"foreignKey:UserID"`
+
+	Status   MemberStatus `json:"status" gorm:"default:0"`
+	PhotoURL string       `json:"photo_url,omitempty"`
+	Owner    bool         `json:"owner" gorm:"default:false"`
+
+	UserID uint `json:"user_id" gorm:"index"`
+	User   User `json:"user" gorm:"foreignKey:UserID"`
+
 	OrganizationID uuid.UUID    `json:"organization_id" gorm:"index"`
 	Organization   Organization `json:"organization" gorm:"foreignKey:OrganizationID"`
-	RoleID         *uint        `json:"role_id,omitempty" gorm:"index"`
-	Role           *Role        `json:"role,omitempty" gorm:"foreignKey:RoleID"`
-	Status         MemberStatus `json:"status" gorm:"default:0"`
-	PhotoURL       string       `json:"photo_url,omitempty"`
-	Owner          bool         `json:"owner" gorm:"default:false"`
+
+	Roles []*Role `json:"role,omitempty" gorm:"many2many:member_roles;"`
 }

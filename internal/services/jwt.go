@@ -18,8 +18,9 @@ const (
 
 type JWTClaims struct {
 	jwt.StandardClaims
-	UserID uint      `json:"user_id"`
-	Type   TokenType `json:"type"`
+	UserID      uint                   `json:"user_id"`
+	Type        TokenType              `json:"type"`
+	Permissions []model.RolePermission `json:"permissions"`
 }
 type JWTService struct {
 	accessTokenDuration  time.Duration
@@ -45,11 +46,12 @@ type GenerateJWTResponse struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-func (s *JWTService) GenerateAccessToken(user model.User) (GenerateJWTResponse, error) {
+func (s *JWTService) GenerateAccessToken(user model.User, permissions []model.RolePermission) (GenerateJWTResponse, error) {
 	expiresAt := time.Now().Add(s.accessTokenDuration)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &JWTClaims{
-		UserID: user.ID,
-		Type:   ACCESS_TOKEN,
+		UserID:      user.ID,
+		Type:        ACCESS_TOKEN,
+		Permissions: permissions,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt.Unix(),
 			IssuedAt:  time.Now().Unix(),

@@ -2,9 +2,12 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mayron1806/go-api/internal/constants"
 	"github.com/mayron1806/go-api/internal/handler/auth"
 	"github.com/mayron1806/go-api/internal/handler/organization"
+	"github.com/mayron1806/go-api/internal/interceptors"
 	"github.com/mayron1806/go-api/internal/middleware"
+	"github.com/mayron1806/go-api/internal/model"
 	"github.com/mayron1806/go-api/internal/services"
 )
 
@@ -35,6 +38,7 @@ func registerRoutes(router *gin.Engine) error {
 	protectedGroup.Use(middleware.JWTAuthMiddleware(jwtService))
 
 	organizationGroup := protectedGroup.Group("/organization")
+	organizationGroup.GET("/:organizationId", interceptors.RBAC(organizationHandler.GetOrganization, []model.RolePermission{constants.ORGANIZATION_GET}))
 	organizationGroup.POST("", organizationHandler.CreateOrganization)
 	return nil
 }

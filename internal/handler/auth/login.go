@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mayron1806/go-api/internal/constants"
 	"github.com/mayron1806/go-api/internal/helper"
 	"github.com/mayron1806/go-api/internal/model"
 	"github.com/mayron1806/go-api/internal/template"
@@ -64,9 +65,25 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		h.ResponseError(c, http.StatusBadRequest, "user not active")
 		return
 	}
-	// generate token accessToken
 
-	accessToken, accessTokenError := h.jwtService.GenerateAccessToken(user)
+	// get all user members
+	var members []model.Member
+	if err := h.db.Where("user_id = ?", user.ID).Find(&members).Error; err != nil {
+		h.ResponseError(c, http.StatusBadRequest, "login error: %s", err.Error())
+		return
+	}
+
+	var permissions []model.RolePermission
+	for _, member := range members {
+		if member.Owner {
+			for _, permission := range constants.DefaultOwnerPermissions {
+				permissions = append(permissions, permission)
+			}
+		}
+	}
+
+	// generate tokens
+	accessToken, accessTokenError := h.jwtService.GenerateAccessToken(user, permissions)
 	if accessTokenError != nil {
 		h.ResponseError(c, http.StatusBadRequest, "login error: %s", accessTokenError.Error())
 		return
