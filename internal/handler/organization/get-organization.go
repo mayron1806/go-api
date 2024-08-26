@@ -15,7 +15,5 @@ func (h *OrganizationHandler) GetOrganization(c *gin.Context) {
 		h.ResponseError(c, http.StatusBadRequest, "error getting organization: %s", err.Error())
 		return
 	}
-	var permissions []model.RolePermission
-	permissions, err = h.roleService.FindByUserID(h.GetUserID(c))
-	c.JSON(http.StatusOK, permissions)
+	c.JSON(http.StatusOK, organization)
 }

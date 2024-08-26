@@ -2,14 +2,15 @@ package interceptors
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/mayron1806/go-api/config"
 	"github.com/mayron1806/go-api/internal/model"
 	"github.com/mayron1806/go-api/internal/services"
 )
 
-func RBAC(next gin.HandlerFunc, requiredPermissions []model.RolePermission) gin.HandlerFunc {
+func RBAC(next gin.HandlerFunc, requiredPermissions ...model.Permission) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Extrai o token JWT do cabeçalho Authorization
 		var claims services.JWTClaims
@@ -26,21 +27,18 @@ func RBAC(next gin.HandlerFunc, requiredPermissions []model.RolePermission) gin.
 				return
 			}
 		}
-		formattedRequiredPermissions := make([]model.RolePermission, len(requiredPermissions))
+		formattedRequiredPermissions := make([]model.Permission, len(requiredPermissions))
 
 		if organizationId, ok := c.Params.Get("organizationId"); ok {
-			uuid, err := uuid.Parse(organizationId)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid organization ID"})
-				c.Abort()
-				return
-			}
 			for i, permission := range requiredPermissions {
-				formattedRequiredPermissions[i] = permission.ReplaceOrganizationID(uuid)
+				formattedRequiredPermissions[i] = model.Permission(strings.Replace(permission.String(), "{organizationId}", organizationId, -1))
 			}
 		}
+		logger := config.GetLogger("RBAC")
+		logger.Debugf("requiredPermissions: %v", formattedRequiredPermissions)
+		logger.Debugf("user permissions: %v", claims.Permissions)
 		allPermissionsOk := true
-		for _, permission := range requiredPermissions {
+		for _, permission := range formattedRequiredPermissions {
 			permissionOk := false
 			for _, rolePermission := range claims.Permissions {
 				if rolePermission == permission {

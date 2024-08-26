@@ -52,5 +52,5 @@ func (h *AuthHandler) ActiveAccount(c *gin.Context) {
 		h.ResponseError(c, http.StatusBadRequest, "error updating user: %s", result.Error.Error())
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }

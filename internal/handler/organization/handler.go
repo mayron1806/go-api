@@ -11,7 +11,6 @@ type OrganizationHandler struct {
 	*handler.Handler
 	db           *gorm.DB
 	emailService *services.EmailService
-	roleService  *services.PermissionService
 }
 
 func NewOrganizationHandler() (*OrganizationHandler, error) {
@@ -20,7 +19,6 @@ func NewOrganizationHandler() (*OrganizationHandler, error) {
 		Handler:      handler.NewHandler(logger),
 		emailService: services.NewEmailService(),
 		db:           config.GetDatabase(),
-		roleService:  services.NewPermissionService(),
 	}
 	return handler, nil
 }

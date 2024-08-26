@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -22,8 +21,26 @@ type Member struct {
 	UserID uint `json:"user_id" gorm:"index"`
 	User   User `json:"user" gorm:"foreignKey:UserID"`
 
-	OrganizationID uuid.UUID    `json:"organization_id" gorm:"index"`
+	OrganizationID uint         `json:"organization_id" gorm:"index"`
 	Organization   Organization `json:"organization" gorm:"foreignKey:OrganizationID"`
 
-	Roles []*Role `json:"role,omitempty" gorm:"many2many:member_roles;"`
+	RoleID string `json:"role" gorm:"default:'member'"`
+}
+
+func (m *Member) Role() Role {
+	if m.RoleID == "" {
+		m.RoleID = "member"
+	}
+	// get role
+	role := Role{
+		ID: m.RoleID,
+	}
+	for _, r := range GetRoles() {
+		if r.ID == m.RoleID {
+			role = r
+			break
+		}
+	}
+	role = role.ReplaceOrganizationID(m.OrganizationID)
+	return role
 }

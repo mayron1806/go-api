@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/mayron1806/go-api/internal/constants"
 	"github.com/mayron1806/go-api/internal/helper"
 	"github.com/mayron1806/go-api/internal/model"
 	"github.com/mayron1806/go-api/internal/template"
@@ -73,15 +72,19 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	var permissions []model.RolePermission
-	for _, member := range members {
-		if member.Owner {
-			for _, permission := range constants.DefaultOwnerPermissions {
-				permissions = append(permissions, permission)
-			}
-		}
-	}
+	var permissions []model.Permission
 
+	for _, member := range members {
+		// Criar uma cópia do papel do membro
+		role := member.Role()
+
+		// Substituir o organizationId na cópia do papel
+		copiedRole := role
+		copiedRole.ReplaceOrganizationID(member.OrganizationID)
+
+		// Adicionar permissões à lista de permissões
+		permissions = append(permissions, copiedRole.Permissions...)
+	}
 	// generate tokens
 	accessToken, accessTokenError := h.jwtService.GenerateAccessToken(user, permissions)
 	if accessTokenError != nil {
