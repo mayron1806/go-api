@@ -11,6 +11,8 @@ type TokenType uint8
 const (
 	ResetPassword TokenType = iota
 	ActiveAccount
+	RefreshToken
+	SocialToken
 )
 
 type Token struct {

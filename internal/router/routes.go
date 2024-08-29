@@ -31,6 +31,8 @@ func registerRoutes(router *gin.Engine) error {
 	authGroup.POST("/active", authHandler.ActiveAccount)
 	authGroup.POST("/forget-password", authHandler.ForgetPassword)
 	authGroup.POST("/reset-password", authHandler.ResetPassword)
+	authGroup.GET("/oauth/:provider", authHandler.OAuth)
+	authGroup.GET("/oauth/:provider/callback", authHandler.OAuthCallback)
 
 	protectedGroup := apiGroup.Group("/")
 	jwtService := services.NewJWTService()

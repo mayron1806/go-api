@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mayron1806/go-api/config"
 	"github.com/mayron1806/go-api/internal/helper"
 	"github.com/mayron1806/go-api/internal/model"
 	"github.com/mayron1806/go-api/internal/template"
@@ -65,36 +66,27 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// get all user members
-	var members []model.Member
-	if err := h.db.Where("user_id = ?", user.ID).Find(&members).Error; err != nil {
+	permissions, err := h.queryUser.GetUserPermissions(user.ID)
+	if err != nil {
 		h.ResponseError(c, http.StatusBadRequest, "login error: %s", err.Error())
 		return
 	}
-
-	var permissions []model.Permission
-
-	for _, member := range members {
-		// Criar uma cópia do papel do membro
-		role := member.Role()
-
-		// Substituir o organizationId na cópia do papel
-		copiedRole := role
-		copiedRole.ReplaceOrganizationID(member.OrganizationID)
-
-		// Adicionar permissões à lista de permissões
-		permissions = append(permissions, copiedRole.Permissions...)
-	}
 	// generate tokens
-	accessToken, accessTokenError := h.jwtService.GenerateAccessToken(user, permissions)
+	accessToken, accessTokenError := h.jwtService.GenerateAccessToken(user, "credentials", permissions)
 	if accessTokenError != nil {
 		h.ResponseError(c, http.StatusBadRequest, "login error: %s", accessTokenError.Error())
 		return
 	}
-	refreshToken, refreshTokenError := h.jwtService.GenerateRefreshToken(user)
-	if refreshTokenError != nil {
-		h.ResponseError(c, http.StatusBadRequest, "login error: %s", refreshTokenError.Error())
-		return
+	refreshToken := model.Token{
+		Key:       uuid.New(),
+		UserID:    user.ID,
+		Type:      model.RefreshToken,
+		Payload:   nil,
+		ExpiresAt: time.Now().Add(time.Duration(config.GetEnv().JWT_REFRESH_TOKEN_DURATION)),
 	}
-	c.JSON(http.StatusOK, gin.H{"accessToken": accessToken.Token, "refreshToken": refreshToken.Token, "expiresAt": accessToken.ExpiresAt})
+	h.db.Create(&refreshToken)
+	h.SetCookie(c, "access-token", accessToken.Token, int(accessToken.ExpiresAt.Sub(time.Now()).Seconds()))
+	h.SetCookie(c, "expires-at", accessToken.ExpiresAt.Format(time.RFC3339), int(accessToken.ExpiresAt.Sub(time.Now()).Seconds()))
+	h.SetCookie(c, "refresh-token", refreshToken.Key.String(), int(refreshToken.ExpiresAt.Sub(time.Now()).Seconds()))
+	c.JSON(http.StatusOK, gin.H{"accessToken": accessToken.Token, "refreshToken": refreshToken.Key.String(), "expiresAt": accessToken.ExpiresAt})
 }

@@ -27,6 +27,7 @@ func initDatabase() (*gorm.DB, error) {
 		&model.Organization{},
 		&model.Member{},
 		&model.Token{},
+		&model.SocialProvider{},
 	)
 	if err != nil {
 		logger.Errorf("postgres migration error: %s", err.Error())
