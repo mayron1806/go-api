@@ -16,7 +16,7 @@ func Init() {
 	}
 	db := config.GetDatabase()
 	s.NewJob(
-		gocron.CronJob("0 0 4 * * *", true),
+		gocron.CronJob("0 0 0 * * *", true),
 		gocron.NewTask(CleanTokens, logger, db),
 	)
 	s.Start()

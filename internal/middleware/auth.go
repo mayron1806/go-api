@@ -8,7 +8,7 @@ import (
 	"github.com/mayron1806/go-api/internal/services"
 )
 
-func JWTAuthMiddleware(jwtService *services.JWTService) gin.HandlerFunc {
+func JWTAuthMiddleware(jwtService *services.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Extrai o token JWT do cabeçalho Authorization
 		authHeader := c.GetHeader("Authorization")

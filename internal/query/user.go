@@ -14,7 +14,7 @@ func NewQueryUser() *QueryUser {
 	logger := config.GetLogger("Query User")
 	return &QueryUser{Query: &Query{db: db, logger: logger}}
 }
-func (q *QueryUser) GetUserById(id int) (*model.User, error) {
+func (q *QueryUser) GetUserById(id uint) (*model.User, error) {
 	user := model.User{}
 	err := q.db.First(&user, id).Error
 	if err != nil {

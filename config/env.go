@@ -85,8 +85,8 @@ func loadEnv() (*Env, error) {
 		SHOULD_SEND_EMAILS: os.Getenv("SHOULD_SEND_EMAILS") == "true" || os.Getenv("ENV") == "production",
 
 		JWT_SECRET:                 getEnv("JWT_SECRET", ""),
-		JWT_ACCESS_TOKEN_DURATION:  getEnvAsInt("JWT_ACCESS_TOKEN_DURATION", 3600),
-		JWT_REFRESH_TOKEN_DURATION: getEnvAsInt("JWT_REFRESH_TOKEN_DURATION", 60*60*24*30),
+		JWT_ACCESS_TOKEN_DURATION:  getEnvAsInt("JWT_ACCESS_TOKEN_DURATION", 60*60),        // 1 hour
+		JWT_REFRESH_TOKEN_DURATION: getEnvAsInt("JWT_REFRESH_TOKEN_DURATION", 60*60*24*30), // 30 days
 		JWT_ISSUER:                 getEnv("JWT_ISSUER", ""),
 
 		GOOGLE_OAUTH_ENABLED:       os.Getenv("GOOGLE_OAUTH_ENABLED") == "true",

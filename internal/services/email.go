@@ -38,8 +38,6 @@ func NewEmailService() *EmailService {
 	auth := smtp.PlainAuth("", env.SMTP_USER, env.SMTP_PASS, env.SMTP_HOST)
 	address := fmt.Sprintf("%s:%s", env.SMTP_HOST, env.SMTP_PORT)
 
-	logger.Debugf("SMTP Address: %s", address)
-
 	return &EmailService{
 		logger:    logger,
 		auth:      auth,

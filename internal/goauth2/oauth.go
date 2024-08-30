@@ -39,3 +39,7 @@ func Authorize(providerName string, query url.Values) (*AuthToken, error) {
 	provider := authInstance.Providers[providerName]
 	return provider.Authorize(query)
 }
+func RevalidateToken(providerName, token string) (*AuthToken, error) {
+	provider := authInstance.Providers[providerName]
+	return provider.RevalidateToken(token)
+}

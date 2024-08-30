@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/mayron1806/go-api/config"
 	"github.com/mayron1806/go-api/internal/helper"
 	"github.com/mayron1806/go-api/internal/model"
 	"github.com/mayron1806/go-api/internal/template"
@@ -72,21 +71,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 	// generate tokens
-	accessToken, accessTokenError := h.jwtService.GenerateAccessToken(user, "credentials", permissions)
-	if accessTokenError != nil {
-		h.ResponseError(c, http.StatusBadRequest, "login error: %s", accessTokenError.Error())
+	tokens, err := h.authService.GenerateTokens(&user, "credentials", permissions, &model.RefreshTokenPayload{Type: "credentials"})
+	if err != nil {
+		h.ResponseError(c, http.StatusBadRequest, "login error: %s", err.Error())
 		return
 	}
-	refreshToken := model.Token{
-		Key:       uuid.New(),
-		UserID:    user.ID,
-		Type:      model.RefreshToken,
-		Payload:   nil,
-		ExpiresAt: time.Now().Add(time.Duration(config.GetEnv().JWT_REFRESH_TOKEN_DURATION)),
-	}
-	h.db.Create(&refreshToken)
-	h.SetCookie(c, "access-token", accessToken.Token, int(accessToken.ExpiresAt.Sub(time.Now()).Seconds()))
-	h.SetCookie(c, "expires-at", accessToken.ExpiresAt.Format(time.RFC3339), int(accessToken.ExpiresAt.Sub(time.Now()).Seconds()))
-	h.SetCookie(c, "refresh-token", refreshToken.Key.String(), int(refreshToken.ExpiresAt.Sub(time.Now()).Seconds()))
-	c.JSON(http.StatusOK, gin.H{"accessToken": accessToken.Token, "refreshToken": refreshToken.Key.String(), "expiresAt": accessToken.ExpiresAt})
+
+	h.SetTokenCookies(c, tokens)
+	c.JSON(http.StatusOK, tokens)
 }

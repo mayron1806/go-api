@@ -29,13 +29,14 @@ func registerRoutes(router *gin.Engine) error {
 	authGroup.POST("/register", authHandler.CreateUser)
 	authGroup.POST("/login", authHandler.Login)
 	authGroup.POST("/active", authHandler.ActiveAccount)
+	authGroup.POST("/refresh", authHandler.RefreshToken)
 	authGroup.POST("/forget-password", authHandler.ForgetPassword)
 	authGroup.POST("/reset-password", authHandler.ResetPassword)
 	authGroup.GET("/oauth/:provider", authHandler.OAuth)
 	authGroup.GET("/oauth/:provider/callback", authHandler.OAuthCallback)
 
 	protectedGroup := apiGroup.Group("/")
-	jwtService := services.NewJWTService()
+	jwtService := services.NewAuthService()
 	protectedGroup.Use(middleware.JWTAuthMiddleware(jwtService))
 
 	organizationGroup := protectedGroup.Group("/organization")
